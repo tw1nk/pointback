@@ -1,0 +1,26 @@
+{
+  "name": "@pointback/daemon",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./identity": {
+      "types": "./dist/identity.d.ts",
+      "default": "./dist/identity.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@pointback/protocol": "*",
+    "sharp": "^0.35.4",
+    "ws": "^8.18.0",
+    "zod": "^4.3.0"
+  }
+}

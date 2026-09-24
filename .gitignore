@@ -1,0 +1,31 @@
+# Dependencies and generated output
+node_modules/
+dist/
+*.tsbuildinfo
+coverage/
+.vite/
+.cache/
+
+# Local development environment
+.devbox/
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Runtime data and logs
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+*.db
+*.db-shm
+*.db-wal
+*.log
+npm-debug.log*
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp

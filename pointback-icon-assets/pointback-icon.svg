@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <!-- outer blue target disc -->
+    <circle cx="57" cy="59" r="38" fill="#2F80FF"/>
+    <!-- white precision ring -->
+    <circle cx="57" cy="59" r="23" fill="none" stroke="#FFFFFF" stroke-width="11"/>
+    <!-- return loop -->
+    <path d="M84 28
+             C101 31 112 43 114 58
+             C116 70 112 82 103 91"
+          stroke="#1746B3" stroke-width="10"/>
+    <!-- return arrowhead -->
+    <path d="M83 28 L94 18 M83 28 L95 36"
+          stroke="#1746B3" stroke-width="10"/>
+    <!-- cursor -->
+    <path d="M55 52
+             L88 73
+             L72 78
+             L63 96
+             Z"
+          fill="#1746B3"
+          stroke="#FFFFFF"
+          stroke-width="6"/>
+  </g>
+</svg>

@@ -1,0 +1,23 @@
+{
+  "name": "@pointback/mcp",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "types": "./dist/index.d.ts",
+    "default": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@pointback/daemon": "*",
+    "@pointback/protocol": "*",
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "zod": "^4.3.0"
+  },
+  "bin": {
+    "pointback-mcp": "./dist/index.js"
+  }
+}

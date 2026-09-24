@@ -3,23 +3,34 @@ import { test } from "node:test";
 import { spawn } from "node:child_process";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
+import { createServer } from "node:net";
 import { chromium } from "playwright-core";
 
 const executablePath = process.env.POINTBACK_BROWSER_PATH ?? "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge";
 test("React JSX maps DOM to source only in development", { skip: !existsSync(executablePath) && "Set POINTBACK_BROWSER_PATH to Chromium" }, async () => {
   const root = join(process.cwd(), "examples/react-vite");
-  const vite = spawn(join(process.cwd(), "node_modules/.bin/vite"), ["--host", "127.0.0.1", "--port", "5196", "--strictPort"], { cwd: root, stdio: "pipe" });
+  const port = await new Promise<number>((resolve, reject) => {
+    const server = createServer();
+    server.once("error", reject);
+    server.listen(0, "127.0.0.1", () => {
+      const address = server.address();
+      if (!address || typeof address === "string") { server.close(); reject(new Error("No test port available")); return; }
+      server.close(() => resolve(address.port));
+    });
+  });
+  const url = `http://127.0.0.1:${port}/`;
+  const vite = spawn(join(process.cwd(), "node_modules/.bin/vite"), ["--host", "127.0.0.1", "--port", String(port), "--strictPort"], { cwd: root, stdio: "pipe" });
   let browser: Awaited<ReturnType<typeof chromium.launch>> | undefined;
   try {
     let ready = false;
     for (let i = 0; i < 60; i++) {
-      try { if ((await fetch("http://127.0.0.1:5196/")).ok) { ready = true; break; } } catch { /* Starting. */ }
+      try { if ((await fetch(url)).ok) { ready = true; break; } } catch { /* Starting. */ }
       await new Promise((resolve) => setTimeout(resolve, 100));
     }
     assert.ok(ready);
     browser = await chromium.launch({ executablePath, headless: true });
     const page = await browser.newPage();
-    await page.goto("http://127.0.0.1:5196/");
+    await page.goto(url, { waitUntil: "networkidle" });
     const theme = await page.evaluate(() => ({
       page: getComputedStyle(document.documentElement).backgroundColor,
       menu: getComputedStyle(document.querySelector("pointback-overlay")!.shadowRoot!.querySelector("#panel")!).backgroundColor,

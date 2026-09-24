@@ -2,7 +2,7 @@ import { createRoot } from "react-dom/client";
 import "./styles.css";
 
 function PointbackIcon({ size = 36 }: { size?: number }) {
-  return <img aria-hidden="true" src="/pointback-icon.svg" width={size} height={size} alt="" />;
+  return <img aria-hidden="true" src={`${import.meta.env.BASE_URL}pointback-icon.svg`} width={size} height={size} alt="" />;
 }
 
 function PopupIcon({ kind }: { kind: "element" | "region" | "page" | "send" | "queue" | "batch" }) {
@@ -39,6 +39,7 @@ const useCases = [
 ];
 
 function openReview() {
+  if (import.meta.env.PROD) { window.location.href = "https://github.com/tw1nk/pointback#quick-start"; return; }
   const launcher = document.querySelector("pointback-overlay")?.shadowRoot?.querySelector<HTMLButtonElement>("#launcher");
   if (launcher) launcher.click();
   else document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" });
@@ -61,7 +62,7 @@ function App() {
             <p className="hero-lede">Point at it. <span>Send it back.</span></p>
             <p className="hero-description">Leave precise feedback inside your running app and send it straight to the agent building it. No screenshots to explain, no context lost in chat.</p>
             <div className="hero-actions">
-              <button type="button" className="primary-cta" onClick={openReview}>Open review mode <span aria-hidden="true">↗</span></button>
+              <button type="button" className="primary-cta" onClick={openReview}>{import.meta.env.PROD ? "Get started" : "Open review mode"} <span aria-hidden="true">↗</span></button>
               <a className="secondary-cta" href="#how-it-works">See how it works <span aria-hidden="true">↓</span></a>
             </div>
             <p className="hero-footnote"><span aria-hidden="true">✦</span> See updates through the HMR you already use.</p>

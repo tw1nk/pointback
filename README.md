@@ -1,5 +1,7 @@
 # Pointback
 
+[Website](https://tw1nk.github.io/pointback/) · [Quick start](#quick-start)
+
 **Review a live UI and send contextual feedback to your coding agent.** Select an element, draw a region, or comment on the whole page; Pointback attaches the target and a screenshot so the agent can find and fix the issue.
 
 > **Early prototype.** Vite integration and live delivery to Pi are available. Other agents can use MCP polling; native adapters for them and robust cross-browser screenshot validation are not yet implemented. Pull requests are welcome

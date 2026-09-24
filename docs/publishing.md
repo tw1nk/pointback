@@ -19,4 +19,4 @@ npm publish --workspace @pointback/pi
 
 The manifests set `publishConfig.access` to `public`. Never reuse a published version. After publishing, test `npm install -D @pointback/vite @pointback/cli` in a **separate, clean Vite project**, start it with `npx pointback dev -- npm run dev`, and install the Pi integration via `pi install npm:@pointback/pi` if desired. The MCP executable is `pointback-mcp` from `@pointback/mcp`.
 
-Until a release exists on npm, follow the local-repository instructions in the main README instead.
+For local development without publishing, use the source-build instructions in the main README.

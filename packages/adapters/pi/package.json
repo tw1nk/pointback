@@ -1,11 +1,35 @@
 {
   "name": "@pointback/pi",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
-  "private": true,
-  "keywords": ["pi-package"],
-  "pi": { "extensions": ["./dist/index.js"] },
-  "scripts": { "build": "tsc -p tsconfig.json", "typecheck": "tsc -p tsconfig.json --noEmit" },
-  "dependencies": { "@pointback/daemon": "*", "@pointback/protocol": "*", "ws": "^8.18.0" },
-  "peerDependencies": { "@earendil-works/pi-coding-agent": "*", "@earendil-works/pi-ai": "*" }
+  "keywords": [
+    "pi-package"
+  ],
+  "pi": {
+    "extensions": [
+      "./dist/index.js"
+    ]
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@pointback/daemon": "^0.1.0",
+    "@pointback/protocol": "^0.1.0",
+    "ws": "^8.18.0"
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*",
+    "@earendil-works/pi-ai": "*"
+  },
+  "files": [
+    "dist/"
+  ],
+  "engines": {
+    "node": ">=24"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
 }

@@ -1,7 +1,6 @@
 {
   "name": "@pointback/vite",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0",
   "type": "module",
   "exports": {
     "types": "./dist/index.d.ts",
@@ -12,10 +11,19 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@pointback/browser": "*",
-    "@pointback/daemon": "*",
+    "@pointback/browser": "^0.1.0",
+    "@pointback/daemon": "^0.1.0",
     "vite": "^7.3.0",
     "@babel/parser": "^7.28.0",
     "magic-string": "^0.30.0"
+  },
+  "files": [
+    "dist/"
+  ],
+  "engines": {
+    "node": ">=24"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

@@ -86,4 +86,4 @@ npm test
 npm run build
 ```
 
-See [TASKS.md](TASKS.md) for outstanding work, [PLAN.md](PLAN.md) for product direction, and [docs/agent-adapters.md](docs/agent-adapters.md) for the agent transport design.
+See [TASKS.md](TASKS.md) for outstanding work, [PLAN.md](PLAN.md) for product direction, [docs/agent-adapters.md](docs/agent-adapters.md) for the agent transport design, and [docs/publishing.md](docs/publishing.md) for npm release instructions.

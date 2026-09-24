@@ -10,6 +10,7 @@
   "scripts": {
     "build": "npm run build -w @pointback/protocol && npm run build -w @pointback/browser && npm run build -w @pointback/daemon && npm run build -w @pointback/vite && npm run build -w @pointback/mcp && npm run build -w @pointback/cli && npm run build -w @pointback/pi && npm run build -w @pointback/example-vanilla && npm run build -w @pointback/example-react",
     "typecheck": "npm run build -w @pointback/protocol && npm run build -w @pointback/daemon && npm run typecheck --workspaces --if-present",
+    "pack:check": "node scripts/check-packages.mjs",
     "test": "npm run build -w @pointback/protocol && npm run build -w @pointback/daemon && npm run build -w @pointback/pi && npm run build -w @pointback/mcp && npm run build -w @pointback/browser && npm run build -w @pointback/vite && npm run build -w @pointback/example-react && node --experimental-strip-types --test packages/protocol/src/*.test.ts packages/daemon/src/*.test.ts packages/mcp/src/*.test.ts packages/adapters/pi/src/*.test.ts examples/vanilla-vite/smoke.test.ts examples/react-vite/source.test.ts"
   },
   "devDependencies": {

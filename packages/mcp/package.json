@@ -1,7 +1,6 @@
 {
   "name": "@pointback/mcp",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0",
   "type": "module",
   "exports": {
     "types": "./dist/index.d.ts",
@@ -12,12 +11,21 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@pointback/daemon": "*",
-    "@pointback/protocol": "*",
+    "@pointback/daemon": "^0.1.0",
+    "@pointback/protocol": "^0.1.0",
     "@modelcontextprotocol/sdk": "^1.0.0",
     "zod": "^4.3.0"
   },
   "bin": {
     "pointback-mcp": "./dist/index.js"
+  },
+  "files": [
+    "dist/"
+  ],
+  "engines": {
+    "node": ">=24"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

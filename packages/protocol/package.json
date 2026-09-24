@@ -1,7 +1,6 @@
 {
   "name": "@pointback/protocol",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0",
   "type": "module",
   "exports": {
     "types": "./dist/index.d.ts",
@@ -13,5 +12,14 @@
   },
   "dependencies": {
     "zod": "^4.3.0"
+  },
+  "files": [
+    "dist/"
+  ],
+  "engines": {
+    "node": ">=24"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

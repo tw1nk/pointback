@@ -1,7 +1,6 @@
 {
   "name": "@pointback/browser",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0",
   "type": "module",
   "exports": {
     "types": "./dist/index.d.ts",
@@ -12,7 +11,16 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@pointback/protocol": "*",
+    "@pointback/protocol": "^0.1.0",
     "html-to-image": "^1.11.13"
+  },
+  "files": [
+    "dist/"
+  ],
+  "engines": {
+    "node": ">=24"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

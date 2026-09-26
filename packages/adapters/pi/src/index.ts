@@ -2,11 +2,13 @@ import { Type } from "@earendil-works/pi-ai";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 // Use the local identity module while this adapter is loaded from the monorepo by Pi's jiti runtime.
 import { projectId, projectToken } from "../../../daemon/dist/identity.js";
+import type { startDaemon } from "@pointback/daemon";
 import { commentSchema, sessionSchema, type ReviewComment } from "@pointback/protocol";
 import WebSocket from "ws";
 
 export default function pointback(pi: ExtensionAPI, options: { projectRoot?: string } = {}) {
   let socket: WebSocket | undefined;
+  let ownedDaemon: ReturnType<typeof startDaemon> | undefined;
   let timer: ReturnType<typeof setTimeout> | undefined;
   let stopped = true;
   let project = "";
@@ -28,8 +30,9 @@ export default function pointback(pi: ExtensionAPI, options: { projectRoot?: str
   }
   function connect() {
     if (stopped) return;
-    socket = new WebSocket(`ws://127.0.0.1:${port}/events?project=${project}&token=${projectToken(project)}&role=agent&session=${encodeURIComponent(agentSession)}`);
-    socket.on("open", () => {
+    const connection = new WebSocket(`ws://127.0.0.1:${port}/events?project=${project}&token=${projectToken(project)}&role=agent&session=${encodeURIComponent(agentSession)}`);
+    socket = connection;
+    connection.on("open", () => {
       onConnected?.();
       void (async () => {
         const sessions = sessionSchema.array().parse(await request("/sessions"));
@@ -37,7 +40,7 @@ export default function pointback(pi: ExtensionAPI, options: { projectRoot?: str
         await deliver(comments.filter((c) => c.status === "open" && sessions.some((s) => s.id === c.sessionId && s.status === "submitted")));
       })().catch((error) => console.error("Pointback pending review failed:", error));
     });
-    socket.on("message", (data) => {
+    connection.on("message", (data) => {
       void (async () => {
         const event = JSON.parse(data.toString()) as { type: string; sessionId?: string; commentIds?: string[]; commentId?: string };
         if (event.type !== "review.submitted" && event.type !== "comment.reopened") return;
@@ -47,9 +50,51 @@ export default function pointback(pi: ExtensionAPI, options: { projectRoot?: str
         await deliver(comments);
       })().catch((error) => console.error("Pointback delivery failed:", error));
     });
-    socket.on("error", (error) => { console.error("Pointback connection error:", error.message); });
-    socket.on("close", () => { if (!stopped) timer = setTimeout(connect, 2000); });
+    // The daemon is optional until /pointback is run. A failed connection closes
+    // the socket and the close handler retries quietly.
+    connection.on("error", () => {});
+    connection.on("close", () => {
+      if (socket !== connection) return;
+      socket = undefined;
+      if (!stopped) timer = setTimeout(connect, 2000);
+    });
   }
+  pi.registerCommand("pointback", {
+    description: "Start the Pointback review daemon and connect this Pi session",
+    handler: async (_args, ctx) => {
+      if (!ownedDaemon) {
+        try {
+          const response = await fetch(`http://127.0.0.1:${port}/agents`, {
+            headers: { "x-pointback-project": project, "x-pointback-token": projectToken(project) },
+          });
+          if (!response.ok) throw new Error(`Daemon returned HTTP ${response.status}`);
+        } catch (error) {
+          if (error instanceof Error && error.message.startsWith("Daemon returned")) {
+            ctx.ui.notify(`Pointback: ${error.message}`, "error");
+            return;
+          }
+          try {
+            const { startDaemon } = await import("@pointback/daemon");
+            ownedDaemon = startDaemon({ port: Number(port) });
+            await new Promise<void>((resolve, reject) => {
+              ownedDaemon!.server.once("listening", resolve);
+              ownedDaemon!.server.once("error", reject);
+            });
+          } catch (startError) {
+            ctx.ui.notify(`Pointback could not start: ${String(startError)}`, "error");
+            return;
+          }
+        }
+      }
+      if (timer) clearTimeout(timer);
+      if (socket && socket.readyState !== WebSocket.OPEN) {
+        socket.terminate();
+        socket = undefined;
+      }
+      if (!socket) connect();
+      ctx.ui.notify("Pointback daemon is running", "info");
+    },
+  });
   pi.on("session_start", (_event, ctx) => {
     if (socket) socket.terminate();
     if (timer) clearTimeout(timer);
@@ -64,6 +109,8 @@ export default function pointback(pi: ExtensionAPI, options: { projectRoot?: str
     if (timer) clearTimeout(timer);
     socket?.terminate();
     socket = undefined;
+    if (ownedDaemon) void ownedDaemon.close().catch((error) => console.error("Pointback shutdown failed:", error));
+    ownedDaemon = undefined;
   });
   pi.registerTool({
     name: "pointback_get_pending", label: "Pointback pending", description: "List unresolved review feedback for this project", parameters: Type.Object({}),

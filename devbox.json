@@ -1,7 +1,8 @@
 {
   "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/0.18.3/.schema/devbox.schema.json",
-  "packages": ["nodejs@24"],
+  "packages": ["nodejs@24", "stdenv.cc.cc.lib"],
   "shell": {
+    "init_hook": ["export LD_LIBRARY_PATH=\"$DEVBOX_PACKAGES_DIR/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}\""],
     "scripts": {
       "install": "npm install",
       "build": "npm run build",

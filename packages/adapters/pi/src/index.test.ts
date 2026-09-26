@@ -21,6 +21,7 @@ test("Pi extension receives submitted reviews and acknowledges them", async () =
   const pi = {
     on: (event: string, callback: (...args: unknown[]) => void) => callbacks.set(event, callback),
     registerTool: () => {},
+    registerCommand: () => {},
     sendUserMessage: (text: string) => { received = text; },
   };
   try {

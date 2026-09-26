@@ -78,7 +78,7 @@ function start() {
     try {
       const value = JSON.parse(sessionStorage.getItem(storageKey) ?? "null");
       return value && typeof value === "object" ? value as {
-        open?: boolean; route?: string; mode?: string; target?: ReviewTarget; drafts?: Draft[]; text?: string; editing?: number | null; hideAccepted?: boolean; selectedCommentId?: string | null; panelPosition?: { x: number; y: number } | null;
+        open?: boolean; route?: string; mode?: string; target?: ReviewTarget; drafts?: Draft[]; pending?: Draft[][]; text?: string; editing?: number | null; hideAccepted?: boolean; selectedCommentId?: string | null; panelPosition?: { x: number; y: number } | null;
       } : null;
     } catch { return null; }
   })();
@@ -138,6 +138,7 @@ function start() {
   launcher.setAttribute("aria-expanded", String(!panel.hidden));
   launcher.setAttribute("aria-label", panel.hidden ? "Open Pointback review" : "Close Pointback review");
   const drafts: Draft[] = Array.isArray(saved?.drafts) ? saved.drafts.filter((draft) => draft && typeof draft.message === "string" && typeof draft.url === "string" && draft.target && draft.viewport).slice(0, 50) : [];
+  const pending: Draft[][] = Array.isArray(saved?.pending) ? saved.pending.filter((batch) => Array.isArray(batch) && batch.every((draft) => draft && typeof draft.message === "string" && typeof draft.url === "string" && draft.target && draft.viewport)) : [];
   let editing: number | null = typeof saved?.editing === "number" && saved.editing >= 0 && saved.editing < drafts.length ? saved.editing : null;
   let busy = false;
   let hideAccepted = saved?.hideAccepted === true;
@@ -164,7 +165,7 @@ function start() {
   let target: ReviewTarget | null = saved?.route === location.pathname && saved.target && ["element", "region", "page"].includes(saved.target.type) ? saved.target : null;
   textarea.value = typeof saved?.text === "string" ? saved.text : "";
   const persist = () => {
-    try { sessionStorage.setItem(storageKey, JSON.stringify({ open: !panel.hidden, route: location.pathname, mode, target, drafts, text: textarea.value, editing, hideAccepted, selectedCommentId, panelPosition })); }
+    try { sessionStorage.setItem(storageKey, JSON.stringify({ open: !panel.hidden, route: location.pathname, mode, target, drafts, pending, text: textarea.value, editing, hideAccepted, selectedCommentId, panelPosition })); }
     catch { /* Storage can be unavailable or full; review remains usable in memory. */ }
   };
   textarea.addEventListener("input", persist);
@@ -464,8 +465,10 @@ function start() {
   void refreshComments().catch(() => { /* Daemon may not be running yet. */ });
   void request("/agents", "GET").then((agents: unknown) => { if (Array.isArray(agents) && agents.length) status.textContent = "Pi agent connected"; }).catch(() => {});
   let retry: number;
+  let flushPending = () => {};
   const connect = () => {
     const socket = new WebSocket(`ws://127.0.0.1:${settings.port}/events?project=${settings.project}&token=${settings.token}`);
+    socket.addEventListener("open", () => { void refreshComments().catch(() => {}); flushPending(); });
     socket.addEventListener("message", (message) => {
       try {
         const event = JSON.parse(message.data);
@@ -507,21 +510,41 @@ function start() {
   const sendOne = shadow.querySelector<HTMLButtonElement>("#send-one")!;
   const queue = shadow.querySelector<HTMLButtonElement>("#queue")!;
   const sendQueued = shadow.querySelector<HTMLButtonElement>("#send")!;
-  const submit = async (comments: Draft[], onSuccess: () => void) => {
-    if (busy || !comments.length) return;
+  const submit = async (comments: Draft[], onSuccess: () => void, fromPending = false) => {
+    if (busy || !comments.length) return false;
     busy = true; sendOne.disabled = true; queue.disabled = true; sendQueued.disabled = true;
     status.textContent = "Sending review…";
     try {
       const sessions = await request("/sessions", "GET");
       const session = sessions.find((s: { status: string }) => s.status === "active") ?? await request("/sessions", "POST", { git: settings.git });
-      const image = await screenshot();
-      const { id: screenshotId } = await request(`/sessions/${session.id}/screenshots`, "POST", { image });
-      await request(`/sessions/${session.id}/submit`, "POST", comments.map((comment) => ({ ...comment, screenshotId })));
+      let screenshotId: string | undefined;
+      try {
+        const image = await screenshot();
+        ({ id: screenshotId } = await request(`/sessions/${session.id}/screenshots`, "POST", { image }));
+      } catch (error) {
+        console.warn("Pointback: screenshot unavailable; sending comments without it", error);
+      }
+      await request(`/sessions/${session.id}/submit`, "POST", comments.map((comment) => ({ ...comment, ...(screenshotId ? { screenshotId } : {}) })));
       onSuccess(); persist();
-      await refreshComments();
+      await refreshComments().catch(() => {});
       status.textContent = `${comments.length} comment(s) sent; waiting for agent receipt (MCP fallback available)`;
-    } catch (error) { status.textContent = `Not sent: ${error instanceof Error ? error.message : error}`; }
+      return true;
+    } catch (error) {
+      if (!fromPending && error instanceof TypeError) {
+        pending.push(comments);
+        onSuccess(); persist();
+        status.textContent = `${comments.length} comment(s) queued; will send when Pointback reconnects`;
+      } else status.textContent = `Not sent: ${error instanceof Error ? error.message : String(error)}`;
+    }
     finally { busy = false; sendOne.disabled = false; queue.disabled = false; renderDrafts(); }
+    return false;
+  };
+  flushPending = () => {
+    if (busy || !pending.length) return;
+    const batch = pending[0];
+    void submit(batch, () => { pending.shift(); }, true).then((sent) => {
+      if (sent && pending.length) flushPending();
+    });
   };
   sendOne.addEventListener("click", () => {
     const draft = currentDraft(); if (!draft) return;

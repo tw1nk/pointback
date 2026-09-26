@@ -47,7 +47,7 @@ cd /path/to/your-vite-app
 pi
 ```
 
-Alternatively, use `pi -e npm:@pointback/pi` to load it for one invocation. Keep Pi running while you review: the extension connects on session startup, pushes submitted reviews as follow-up messages, and gives Pi tools to inspect screenshots and resolve comments. If Pi was already open, restart it with the extension. The Vite server and Pi must use the same project root to pair correctly.
+Alternatively, use `pi -e npm:@pointback/pi` to load it for one invocation. Keep Pi running while you review: the extension connects on session startup, pushes submitted reviews as follow-up messages, and gives Pi tools to inspect screenshots and resolve comments. If the daemon is not running, type `/pointback` in Pi to start it; the extension retries silently and notifies you when connected. If Pi was already open, restart it with the extension. The Vite server and Pi must use the same project root to pair correctly.
 
 ### 4. Select an element and send feedback
 
@@ -56,7 +56,7 @@ Alternatively, use `pi -e npm:@pointback/pi` to load it for one invocation. Keep
 3. Write what should change and click **Send comment** (or press **Cmd/Ctrl+Enter**). To send multiple comments as one review, **Queue comment** for each and then click **Send queued**.
 4. Pi receives the review, can inspect its screenshot and target, make changes, and resolve the comment. Check the live page to verify the fix.
 
-The popup's **?** button explains its controls. You can drag its header out of the way; double-click to reset its position. Click a marker to find its task, or click a task to locate its marker on the page. Drafts and queued comments survive reloads in the current tab.
+The popup's **?** button explains its controls. You can drag its header out of the way; double-click to reset its position. Click a marker to find its task, or click a task to locate its marker on the page. Drafts and queued comments survive reloads in the current tab. If sending fails because the daemon is unreachable, the popup retains the comments and automatically retries when it reconnects.
 
 ## Other agents: MCP polling
 
